@@ -1,0 +1,645 @@
+<!doctype html><html lang='de'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1,viewport-fit=cover'><meta name='theme-color' content='#101512'><link rel='manifest' href='manifest.webmanifest'><meta name='apple-mobile-web-app-capable' content='yes'><meta name='apple-mobile-web-app-status-bar-style' content='black-translucent'><meta name='apple-mobile-web-app-title' content='RAW Log'><title>RAW Log</title><style>
+:root{--bg:#0d100e;--card:#171c18;--line:#29322b;--fg:#f3f5f3;--mut:#9ca79f;--acc:#77d39a;--warn:#f1c75b}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}main{max-width:720px;margin:auto;padding:18px 16px 100px}.top{display:flex;justify-content:space-between;align-items:center}h1{font-size:28px;margin:8px 0 2px}.sub{color:var(--mut);font-size:14px}.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;margin:14px 0}.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}button,select,input{font:inherit;border-radius:12px;border:1px solid var(--line);background:#101511;color:var(--fg);padding:12px}button{cursor:pointer}.primary{background:var(--acc);color:#07120b;border:0;font-weight:700}.ghost{background:transparent}.wide{width:100%}.pill{display:inline-block;border:1px solid var(--line);border-radius:99px;padding:5px 9px;color:var(--mut);font-size:13px}.hint{border-left:3px solid var(--warn);padding-left:12px}.exercise{padding:12px 0;border-top:1px solid var(--line)}.exercise:first-child{border:0}.sets{font-size:14px;color:var(--mut);margin-top:6px}
+.cluster-list{display:flex;flex-direction:column;align-items:flex-start;gap:7px;margin:10px 0}
+.cluster{width:min(100%,300px);display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 11px;border:1px solid var(--line);border-radius:12px;background:#101511;color:var(--fg);text-align:left}
+.cluster span{color:var(--mut);font-size:12px}
+.statuschip{padding:7px 10px;border-radius:999px;border:1px solid var(--line);font-size:13px;font-weight:700}.statuschip.done{background:#153c27;border-color:#2f7d4b;color:#a8efbf}.statuschip.open{background:#3c1717;border-color:#7d3535;color:#ffc0c0}.supplement{margin-top:14px;padding:14px;border:1px solid var(--line);border-radius:14px;background:#101511}.clickable{cursor:pointer}.danger{border-color:#633;background:#1a1010;color:#ffb2b2}.modal{position:fixed;inset:0;background:#000a;display:flex;align-items:flex-end;justify-content:center;padding:16px;z-index:20}.modal.hidden{display:none}.sheet{width:min(720px,100%);background:var(--card);border:1px solid var(--line);border-radius:20px;padding:18px;margin-bottom:env(safe-area-inset-bottom)}.mic{font-size:19px}.nav{position:fixed;bottom:0;left:0;right:0;background:#0d100ef2;border-top:1px solid var(--line);display:flex;justify-content:center;gap:8px;padding:10px 10px calc(10px + env(safe-area-inset-bottom));z-index:10}.nav button{min-width:95px;flex:0 0 auto}.hidden{display:none}.stat{font-size:28px;font-weight:750}.small{font-size:12px;color:var(--mut)}
+
+.profile-sheet,.cindy-sheet{width:min(620px,92vw);max-height:86vh;overflow:auto}
+.profile-sheet input,.cindy-sheet input{box-sizing:border-box;max-width:100%;margin:5px 0 10px}
+.cindy-clock{text-align:center;font-size:52px;font-weight:800;margin:18px 0}
+.cindy-roundbox{text-align:center;padding:16px;margin:14px 0;border:1px solid var(--line);border-radius:14px}
+.cindy-rounds{font-size:56px;font-weight:800;margin:6px 0 12px}
+.weight-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--line)}
+.volume-line{margin-top:8px;font-weight:700}
+.history-session{margin:12px 0 16px;padding:14px;border:1px solid var(--line);border-left:4px solid var(--acc);border-radius:14px;background:#111713}
+.history-session-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.history-date{font-size:17px;font-weight:750}
+.history-meta{color:var(--mut);font-size:12px;margin-top:3px}
+.history-volume{color:var(--acc);font-weight:800;white-space:nowrap}
+.history-exercise-card{padding:10px 0;border-top:1px solid var(--line)}
+.history-exercise-card:first-of-type{border-top:0}
+.history-exercise-name{font-weight:750;margin-bottom:6px}
+.history-clusters{display:flex;flex-wrap:wrap;gap:6px}
+.history-cluster-chip{display:inline-block;padding:5px 8px;border:1px solid #31513d;border-radius:9px;background:#132019;color:#c8ecd5;font-size:12px;line-height:1.25}
+.cindy-manual-box{margin:12px 0;padding:12px;border:1px solid #31513d;border-radius:12px;background:#132019}
+
+/* V2.8.1 – erste Trainingsauswertung */
+.analytics-record{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;margin-top:12px;padding:14px;border:1px solid var(--line);border-radius:14px;background:rgba(116,211,155,.055)}
+.analytics-record .record-value{font-size:26px;font-weight:800;color:#74d39b;line-height:1.05}
+.analytics-record .record-date{font-size:12px;color:var(--muted);margin-top:5px}
+.chart-wrap{margin-top:12px;border:1px solid var(--line);border-radius:14px;padding:12px;background:rgba(255,255,255,.015);overflow:hidden}
+.chart-title{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:8px}
+.chart-svg{display:block;width:100%;height:190px;overflow:visible}
+.chart-grid{stroke:rgba(255,255,255,.09);stroke-width:1}
+.chart-line{fill:none;stroke:#74d39b;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.chart-dot{fill:#74d39b;stroke:#07130c;stroke-width:2}
+.chart-label{fill:var(--muted);font-size:10px}
+.exercise-link{cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.exercise-link:hover{background:rgba(116,211,155,.045)}
+.exercise-link .chevron{color:#74d39b;font-size:22px;line-height:1}
+.metric-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+.metric-tabs button.active{background:#74d39b;color:#07130c;border-color:#74d39b}
+.analytics-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}
+.analytics-stat{border:1px solid var(--line);border-radius:12px;padding:10px;background:rgba(255,255,255,.015)}
+.analytics-stat b{display:block;color:#74d39b;font-size:18px;margin-top:3px}
+@media(max-width:560px){.analytics-grid{grid-template-columns:1fr 1fr}.chart-svg{height:170px}}
+
+</style>
+<style>.history-exercise-summary{padding:6px 0;border-bottom:1px solid var(--line)}.history-exercise-summary:last-child{border-bottom:0}
+/* V2.8.1 – erste Trainingsauswertung */
+.analytics-record{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;margin-top:12px;padding:14px;border:1px solid var(--line);border-radius:14px;background:rgba(116,211,155,.055)}
+.analytics-record .record-value{font-size:26px;font-weight:800;color:#74d39b;line-height:1.05}
+.analytics-record .record-date{font-size:12px;color:var(--muted);margin-top:5px}
+.chart-wrap{margin-top:12px;border:1px solid var(--line);border-radius:14px;padding:12px;background:rgba(255,255,255,.015);overflow:hidden}
+.chart-title{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:8px}
+.chart-svg{display:block;width:100%;height:190px;overflow:visible}
+.chart-grid{stroke:rgba(255,255,255,.09);stroke-width:1}
+.chart-line{fill:none;stroke:#74d39b;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.chart-dot{fill:#74d39b;stroke:#07130c;stroke-width:2}
+.chart-label{fill:var(--muted);font-size:10px}
+.exercise-link{cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.exercise-link:hover{background:rgba(116,211,155,.045)}
+.exercise-link .chevron{color:#74d39b;font-size:22px;line-height:1}
+.metric-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+.metric-tabs button.active{background:#74d39b;color:#07130c;border-color:#74d39b}
+.analytics-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}
+.analytics-stat{border:1px solid var(--line);border-radius:12px;padding:10px;background:rgba(255,255,255,.015)}
+.analytics-stat b{display:block;color:#74d39b;font-size:18px;margin-top:3px}
+@media(max-width:560px){.analytics-grid{grid-template-columns:1fr 1fr}.chart-svg{height:170px}}
+
+</style>
+<style>
+.week-strip{
+  position:fixed;
+  left:calc(50% + 445px);
+  top:0px;
+  z-index:4;
+  width:66px;
+  padding:0;
+  background:transparent;
+  border:0;
+  box-shadow:none;
+}
+.week-strip-title{display:none}
+.week-day{
+  height:61px;
+  box-sizing:border-box;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:2px;
+  margin:0 0 3px;
+  padding:5px 3px;
+  border:1px solid var(--line,#2a342d);
+  border-radius:9px;
+  background:var(--card,#121914);
+  font-size:12px;
+  line-height:1.15;
+  text-align:center;
+}
+.week-day.today{font-weight:700;border-width:2px}
+.week-day.done{
+  background:#74d39b;
+  color:#07130c;
+  border-color:#74d39b;
+}
+.week-date{font-weight:700}
+.week-name{font-size:11px;opacity:.82}
+.week-day.done .week-name{opacity:.78}
+.week-dot{display:none}
+@media(max-width:1120px){
+  .week-strip{left:auto;right:4px;top:0px;width:60px}
+}
+@media(max-width:760px){
+  main{padding-left:12px;padding-right:12px;padding-bottom:104px}
+  /* Kalender bleibt auch am iPhone hochkant vertikal. Der Inhaltsbereich reserviert
+     rechts bewusst Platz, damit sich Kalender und Karten nicht mehr überlagern. */
+  #home,#history{margin-right:58px}
+  .week-strip{position:fixed;left:auto;right:4px;width:50px;margin:0;display:block;overflow:visible;z-index:4}
+  .week-day{width:50px;height:55px;margin:0 0 3px;font-size:10px;border-radius:8px;padding:3px 2px}
+  .week-name{font-size:9px}
+  .nav{justify-content:flex-start;overflow-x:auto;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-left:max(10px,env(safe-area-inset-left));padding-right:max(10px,env(safe-area-inset-right))}
+  .nav::-webkit-scrollbar{display:none}
+  .nav button{min-width:104px}
+  #accountBar{bottom:88px!important}
+}
+/* In der installierten Web-App etwas mehr Luft zur iPhone-Statusleiste. */
+@media (display-mode:standalone){
+  main{padding-top:calc(30px + env(safe-area-inset-top))}
+}
+
+/* V2.8.1 – erste Trainingsauswertung */
+.analytics-record{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;margin-top:12px;padding:14px;border:1px solid var(--line);border-radius:14px;background:rgba(116,211,155,.055)}
+.analytics-record .record-value{font-size:26px;font-weight:800;color:#74d39b;line-height:1.05}
+.analytics-record .record-date{font-size:12px;color:var(--muted);margin-top:5px}
+.chart-wrap{margin-top:12px;border:1px solid var(--line);border-radius:14px;padding:12px;background:rgba(255,255,255,.015);overflow:hidden}
+.chart-title{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:8px}
+.chart-svg{display:block;width:100%;height:190px;overflow:visible}
+.chart-grid{stroke:rgba(255,255,255,.09);stroke-width:1}
+.chart-line{fill:none;stroke:#74d39b;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.chart-dot{fill:#74d39b;stroke:#07130c;stroke-width:2}
+.chart-label{fill:var(--muted);font-size:10px}
+.exercise-link{cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.exercise-link:hover{background:rgba(116,211,155,.045)}
+.exercise-link .chevron{color:#74d39b;font-size:22px;line-height:1}
+.metric-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+.metric-tabs button.active{background:#74d39b;color:#07130c;border-color:#74d39b}
+.analytics-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}
+.analytics-stat{border:1px solid var(--line);border-radius:12px;padding:10px;background:rgba(255,255,255,.015)}
+.analytics-stat b{display:block;color:#74d39b;font-size:18px;margin-top:3px}
+@media(max-width:560px){.analytics-grid{grid-template-columns:1fr 1fr}.chart-svg{height:170px}}
+
+</style>
+</head><body>
+<div id='loginGate' class='modal'><div class='sheet'>
+  <h2 style='margin-top:0'>RAW Log anmelden</h2>
+  <div class='small'>Mit demselben Account auf iPhone und iPad anmelden.</div>
+  <input id='loginEmail' type='email' autocomplete='username' placeholder='E-Mail' class='wide' style='margin-top:14px'>
+  <input id='loginPassword' type='password' autocomplete='current-password' placeholder='Passwort' class='wide' style='margin-top:10px'>
+  <button class='primary wide' style='margin-top:12px' onclick='login()'>Anmelden</button>
+  <div id='loginMsg' class='small' style='margin-top:10px'></div>
+</div></div>
+<main><div class='top'><div><h1>RAW Log</h1></div><div style='text-align:right'><span class='pill'>V2.8.1 · CLOUD</span><div id='syncState' class='small' style='margin-top:5px'>Cloud wird verbunden …</div></div></div>
+<section id='home'><div class='card' id='todayCard'><b>Heute</b><div id='hints' style='margin-top:10px'></div></div><button class='primary wide' onclick="startTraining()">Training starten</button><div class='card'><b>Letzte Einheiten</b><div id='recent'></div></div></section>
+<section id='train' class='hidden'>
+<div class='card'><b>Training auswählen</b><div class='small'>Freies Krafttraining oder Cindy.</div>
+<div class='row' style='margin-top:12px'><button class='primary' onclick='startFreeTraining()'>Freies Training</button><button class='ghost' onclick='openCindy(false)'>Cindy-Workout</button><button class='ghost' onclick='openCindy(true)'>Cindy nachtragen</button></div></div>
+<div id='freeTrainingArea'>
+<div class='card'><b>Freies Training</b><div class='small'>Basis: mindestens 1 Mehrgelenk · 1 Drücken · 1 Ziehen</div><div style='margin-top:12px'><label class='small' for='workoutDateTime'>Datum & Uhrzeit der Einheit</label><input id='workoutDateTime' type='datetime-local' class='wide' style='margin-top:6px'></div>
+<div id='basisStatus' class='row' style='margin:12px 0;gap:8px;flex-wrap:wrap'></div><div id='workout'></div><div class='row' style='margin-top:12px'><select id='addEx'></select><button onclick='addExercise()'>+ Übung</button></div></div><div class='card'><b>Schnelle Spracheingabe</b><p class='small'>Beispiel: „Kniebeugen, erster Cluster, fünf Wiederholungen, 80 Kilo.“</p><button id='micBtn' class='wide mic' onclick='listen()'>🎙️ Sprechen</button><div id='speech' class='small' style='margin-top:8px'></div></div><button class='primary wide' onclick='finishWorkout()'>Einheit speichern</button></div></section>
+<section id='history' class='hidden'><div class='card' id='historyCard'><b>Historische Einheiten</b><div class='small'>Einheit öffnen, Übungen und Cluster nachträglich bearbeiten oder löschen.</div><div id='historyList' style='margin-top:10px'></div></div></section>
+<section id='progress' class='hidden'>
+<div class='card'><b>Übersicht</b><div class='row' style='margin-top:12px'><div><div id='week' class='stat'>0</div><div class='small'>Einheiten / 7 Tage</div></div><div><div id='abs' class='stat'>0/3</div><div class='small'>Bauch / 7 Tage</div></div></div></div>
+<div class='card'><b>Bestleistung</b><div id='volumeRecord'></div><div id='overallVolumeChart'></div></div>
+<div class='card'><b>Übungsfrequenz</b><div class='small' style='margin-top:4px'>Übung antippen, um ihre Entwicklung zu öffnen.</div><div id='freq'></div></div>
+</section>
+</main>
+<aside id="weekStrip" class="week-strip" aria-label="Letzte 7 Kalendertage"></aside>
+<div id='accountBar' class='hidden' style='position:fixed;right:12px;bottom:76px;z-index:5'><button class='ghost small' onclick='logout()'>Abmelden</button></div>
+<div id='editModal' class='modal hidden'><div class='sheet'><b id='editTitle'>Cluster bearbeiten</b><div class='row' style='margin-top:12px'><input id='editReps' type='number' inputmode='numeric' placeholder='Wdh.' style='width:100px'><input id='editKg' type='number' inputmode='decimal' placeholder='kg' style='width:100px'></div><div class='row' style='margin-top:14px'><button class='primary' onclick='saveClusterEdit()'>Speichern</button><button class='danger' onclick='deleteClusterEdit()'>Cluster löschen</button><button class='ghost' onclick='closeEdit()'>Abbrechen</button></div></div></div>
+
+<div id='profileModal' class='modal hidden'><div class='sheet profile-sheet'>
+<div class='row' style='justify-content:space-between'><b>Nutzerprofil</b><button class='ghost' onclick='closeProfile()'>Schließen</button></div>
+<p class='small'>Geburtsdatum, Größe und Körpergewicht sind die Basis für dein Profil. Gewichtsänderungen werden mit Datum gespeichert.</p>
+<label class='small'>Geburtsdatum</label><input id='profileBirth' type='date'>
+<label class='small'>Größe in cm</label><input id='profileHeight' type='number' inputmode='decimal' step='0.1' placeholder='174'>
+<button class='primary wide' style='margin-top:10px' onclick='saveProfile()'>Profildaten speichern</button>
+<hr style='margin:18px 0;border-color:var(--line)'>
+<b>Körpergewicht eintragen</b>
+<div class='row' style='margin-top:8px'><input id='weightDate' type='date'><input id='weightKg' type='number' inputmode='decimal' step='0.1' placeholder='kg'></div>
+<button class='primary wide' onclick='addWeight()'>Gewicht speichern</button>
+<div id='weightHistory' style='margin-top:12px'></div>
+</div></div>
+
+
+<div id='exerciseAnalyticsModal' class='modal hidden'><div class='sheet'>
+<div class='row' style='justify-content:space-between;align-items:center'><div><b id='analyticsExerciseTitle'>Übung</b><div id='analyticsExerciseSub' class='small'></div></div><button class='ghost' onclick='closeExerciseAnalytics()'>Schließen</button></div>
+<div id='analyticsStats' class='analytics-grid'></div>
+<div class='metric-tabs'><button id='metricWeightBtn' class='ghost active' onclick="setExerciseMetric('weight')">Gewicht</button><button id='metricVolumeBtn' class='ghost' onclick="setExerciseMetric('volume')">Volumen</button></div>
+<div id='exerciseChart'></div>
+<div id='exerciseRecent' style='margin-top:12px'></div>
+</div></div>
+
+<div id='cindyModal' class='modal hidden'><div class='sheet cindy-sheet'>
+<div class='row' style='justify-content:space-between'><b>Cindy-Workout</b><button class='ghost' onclick='closeCindy()'>Schließen</button></div>
+<p class='small'>1 Runde = 5 Klimmzüge · 10 Liegestütze · 15 Kniebeugen · alles Eigenkörpergewicht</p>
+<div id='cindyManualBox' class='cindy-manual-box hidden'><b>Cindy nachtragen</b><div class='small' style='margin:4px 0 8px'>Datum und Uhrzeit der absolvierten Einheit</div><input id='cindyDateTime' type='datetime-local' class='wide'></div>
+<label class='small'>Trainingszeit in Minuten</label><input id='cindyMinutes' type='number' min='1' value='20'>
+<div id='cindyClock' class='cindy-clock'>20:00</div>
+<button id='cindyStartBtn' class='primary wide' onclick='startCindyTimer()'>Timer starten</button>
+<div class='cindy-roundbox'><div class='small'>Vollständige Runden</div><div id='cindyRounds' class='cindy-rounds'>0</div>
+<div class='row' style='justify-content:center'><button class='ghost' onclick='changeCindyRound(-1)'>− Runde</button><button class='primary' onclick='changeCindyRound(1)'>+ Runde</button></div></div>
+<b>Angefangene Schlussrunde</b><div class='small'>Optional nach Ablauf eintragen.</div>
+<div class='row' style='margin-top:8px'><div><label class='small'>Klimmzüge</label><input id='cindyExtraPull' type='number' min='0' max='5' value='0'></div><div><label class='small'>Liegestütze</label><input id='cindyExtraPush' type='number' min='0' max='10' value='0'></div><div><label class='small'>Kniebeugen</label><input id='cindyExtraSquat' type='number' min='0' max='15' value='0'></div></div>
+<button class='primary wide' style='margin-top:12px' onclick='saveCindy()'>Cindy speichern</button>
+</div></div>
+<nav class='nav'><button onclick="show('home')">Heute</button><button onclick="startTraining()">Training</button><button onclick="show('history')">Einheiten</button><button onclick="show('progress')">Übersicht</button><button onclick="showProfile()">Profil</button></nav>
+<script>
+const SUPABASE_URL='https://uvnozlbigotdodlacsvv.supabase.co';
+const SUPABASE_KEY='sb_publishable_jGUuwMp9GQ2VfbZkKllm6g_T7bcTK_m';
+const EX=[['Kniebeugen','Mehrgelenk'],['Kreuzheben','Mehrgelenk'],['Sumo-Kreuzheben','Mehrgelenk'],['Schulterdrücken','Drücken'],['Bankdrücken','Drücken'],['Dips','Drücken'],['Klimmzüge','Ziehen'],['Langhantelrudern eng zum Bauch','Ziehen'],['Langhantelrudern breit zur Brust','Ziehen'],['Seitheben','Ergänzung'],['Bauch 5-Minuten-Zirkel','Ergänzung']];
+let data={sessions:[]}, current=[], editingSession=null, editTarget=null, auth=null, user=null;
+function localDateTimeValue(d=new Date()){const z=n=>String(n).padStart(2,'0');return `${d.getFullYear()}-${z(d.getMonth()+1)}-${z(d.getDate())}T${z(d.getHours())}:${z(d.getMinutes())}`}
+function ensureWorkoutDateTime(){if($('workoutDateTime')&&!$('workoutDateTime').value)$('workoutDateTime').value=localDateTimeValue()}
+const $=id=>document.getElementById(id), days=(a,b=new Date())=>(b-new Date(a))/86400000;
+
+
+let profileData=null, weightEntries=[], cindyTimer=null, cindyRemaining=1200, cindyRoundCount=0;
+
+async function loadProfileData(){
+  if(!user?.id)return;
+  const uid=encodeURIComponent(user.id);
+  const p=await api(`user_profiles?user_id=eq.${uid}&select=user_id,birth_date,height_cm`);
+  profileData=(p&&p[0])||null;
+  const w=await api(`body_weight_entries?user_id=eq.${uid}&select=id,measured_at,weight_kg&order=measured_at.desc`);
+  weightEntries=w||[];
+}
+function latestBodyWeight(){return weightEntries.length?Number(weightEntries[0].weight_kg):null}
+function bodyWeightAt(value){
+  const t=new Date(value).getTime();
+  const sorted=[...weightEntries].sort((a,b)=>new Date(b.measured_at)-new Date(a.measured_at));
+  const hit=sorted.find(x=>new Date(x.measured_at).getTime()<=t);
+  return hit?Number(hit.weight_kg):null;
+}
+function profileComplete(){return !!(profileData?.birth_date&&Number(profileData?.height_cm)>0&&latestBodyWeight())}
+async function requireProfile(){
+  try{await loadProfileData()}catch(e){console.error(e)}
+  if(profileComplete())return true;
+  alert('Bitte zuerst dein Nutzerprofil mit Geburtsdatum, Größe und Körpergewicht vervollständigen.');
+  showProfile(); return false;
+}
+async function showProfile(){
+  try{await loadProfileData()}catch(e){return alert('Profil konnte nicht geladen werden.\n\n'+e.message)}
+  $('profileBirth').value=profileData?.birth_date||'';
+  $('profileHeight').value=profileData?.height_cm||'';
+  $('weightDate').value=new Date().toISOString().slice(0,10);
+  $('weightKg').value='';
+  renderWeightHistory();
+  $('profileModal').classList.remove('hidden');
+}
+function closeProfile(){$('profileModal').classList.add('hidden')}
+async function saveProfile(){
+  if(!user?.id)return;
+  const birth=$('profileBirth').value, height=Number($('profileHeight').value);
+  if(!birth||!height)return alert('Bitte Geburtsdatum und Größe vollständig eintragen.');
+  try{
+    await api('user_profiles?on_conflict=user_id',{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify({user_id:user.id,birth_date:birth,height_cm:height,updated_at:new Date().toISOString()})});
+    await loadProfileData(); renderWeightHistory(); alert('Profildaten gespeichert.');
+  }catch(e){alert('Profil konnte nicht gespeichert werden.\n\n'+e.message)}
+}
+async function addWeight(){
+  const kg=Number($('weightKg').value), day=$('weightDate').value;
+  if(!kg||!day)return alert('Bitte Datum und Körpergewicht eingeben.');
+  const measured=new Date(day+'T12:00:00');
+  try{
+    await api('body_weight_entries',{method:'POST',headers:{Prefer:'return=minimal'},body:JSON.stringify({user_id:user.id,measured_at:measured.toISOString(),weight_kg:kg})});
+    await loadProfileData(); $('weightKg').value=''; renderWeightHistory(); render();
+  }catch(e){alert('Gewicht konnte nicht gespeichert werden.\n\n'+e.message)}
+}
+function renderWeightHistory(){
+  $('weightHistory').innerHTML=weightEntries.length?`<b>Gewichtsverlauf</b>`+weightEntries.map(w=>`<div class='weight-row'><span>${new Date(w.measured_at).toLocaleDateString('de-DE')}</span><b>${Number(w.weight_kg).toLocaleString('de-DE',{maximumFractionDigits:2})} kg</b></div>`).join(''):`<div class='small'>Noch kein Körpergewicht gespeichert.</div>`;
+}
+function effectiveSetWeight(exerciseName,setKg,bw){
+  return (exerciseName==='Klimmzüge'||exerciseName==='Dips') ? (Number(bw||0)+Number(setKg||0)) : Number(setKg||0);
+}
+function sessionVolume(s){
+  if((s.workout_type||'strength')==='cindy')return null;
+  const bw=bodyWeightAt(s.date)??s.body_weight_kg??0;
+  return (s.exercises||[]).reduce((sum,e)=>sum+(e.sets||[]).reduce((z,set)=>z+Number(set.reps||0)*effectiveSetWeight(e.name,set.kg,bw),0),0);
+}
+async function startFreeTraining(){
+  if(!await requireProfile())return;
+  $('freeTrainingArea').style.display='block'; ensureWorkoutDateTime();
+}
+async function startTraining(){
+  if(!await requireProfile())return;
+  ensureWorkoutDateTime(); show('train'); $('freeTrainingArea').style.display='block';
+}
+let cindyManualMode=false;
+async function openCindy(manual=false){
+  if(!await requireProfile())return;
+  cindyManualMode=!!manual;
+  cindyRoundCount=0; cindyRemaining=(Number($('cindyMinutes').value)||20)*60;
+  $('cindyRounds').textContent='0';
+  $('cindyExtraPull').value=0; $('cindyExtraPush').value=0; $('cindyExtraSquat').value=0;
+  $('cindyManualBox').classList.toggle('hidden',!cindyManualMode);
+  $('cindyStartBtn').classList.toggle('hidden',cindyManualMode);
+  $('cindyClock').classList.toggle('hidden',cindyManualMode);
+  $('cindyStartBtn').textContent='Timer starten';
+  if(cindyManualMode)$('cindyDateTime').value=localDateTimeValue();
+  updateCindyClock(); $('cindyModal').classList.remove('hidden');
+}
+function closeCindy(){if(cindyTimer){clearInterval(cindyTimer);cindyTimer=null}$('cindyModal').classList.add('hidden')}
+function updateCindyClock(){const m=Math.floor(cindyRemaining/60),s=cindyRemaining%60;$('cindyClock').textContent=`${m}:${String(s).padStart(2,'0')}`}
+function startCindyTimer(){
+  if(cindyTimer)return;
+  cindyRemaining=Math.max(1,Number($('cindyMinutes').value)||20)*60; updateCindyClock();
+  cindyTimer=setInterval(()=>{cindyRemaining=Math.max(0,cindyRemaining-1);updateCindyClock();if(cindyRemaining===0){clearInterval(cindyTimer);cindyTimer=null;$('cindyStartBtn').textContent='Zeit abgelaufen'}},1000);
+}
+function changeCindyRound(delta){cindyRoundCount=Math.max(0,cindyRoundCount+delta);$('cindyRounds').textContent=cindyRoundCount}
+async function saveCindy(){
+  const mins=Math.max(1,Number($('cindyMinutes').value)||20), chosen=cindyManualMode?$('cindyDateTime').value:null, dt=chosen?new Date(chosen):new Date(), bw=bodyWeightAt(dt);
+  if(Number.isNaN(dt.getTime()))return alert('Bitte ein gültiges Datum und eine gültige Uhrzeit eingeben.');
+  if(!bw)return alert('Für Cindy wird ein Körpergewicht im Profil benötigt.');
+  const extraPull=Math.min(5,Math.max(0,Number($('cindyExtraPull').value)||0));
+  const extraPush=Math.min(10,Math.max(0,Number($('cindyExtraPush').value)||0));
+  const extraSquat=Math.min(15,Math.max(0,Number($('cindyExtraSquat').value)||0));
+  try{
+    await api('training_sessions',{method:'POST',headers:{Prefer:'return=minimal'},body:JSON.stringify({user_id:user.id,started_at:dt.toISOString(),finished_at:dt.toISOString(),workout_type:'cindy',body_weight_kg:bw,cindy_duration_seconds:mins*60,cindy_rounds:cindyRoundCount,cindy_extra_pullups:extraPull,cindy_extra_pushups:extraPush,cindy_extra_squats:extraSquat})});
+    closeCindy(); await loadCloud(); show('home');
+  }catch(e){alert('Cindy konnte nicht gespeichert werden.\n\n'+e.message)}
+}
+function cindySummary(s){
+  const r=Number(s.cindy_rounds||0), ep=Number(s.cindy_extra_pullups||0), eu=Number(s.cindy_extra_pushups||0), eq=Number(s.cindy_extra_squats||0);
+  const p=r*5+ep, u=r*10+eu, q=r*15+eq, mins=Math.round(Number(s.cindy_duration_seconds||0)/60);
+  const extras=(ep||eu||eq)?`<div class='history-meta'>Schlussrunde: ${ep} Klimmzüge · ${eu} Liegestütze · ${eq} Kniebeugen</div>`:'';
+  return `<div class='history-exercise-name'>Cindy · ${r} Runden</div><div class='history-clusters'><span class='history-cluster-chip'>${mins} Min</span><span class='history-cluster-chip'>${p} Klimmzüge</span><span class='history-cluster-chip'>${u} Liegestütze</span><span class='history-cluster-chip'>${q} Kniebeugen</span><span class='history-cluster-chip'>${p+u+q} Wdh. gesamt</span></div>${extras}`;
+}
+
+function setSync(t){$('syncState').textContent=t}
+function headers(extra={}){return {'apikey':SUPABASE_KEY,'Authorization':'Bearer '+auth.access_token,'Content-Type':'application/json',...extra}}
+async function api(path,opts={}){
+  if(auth?.expires_at && Date.now() > auth.expires_at*1000-60000){
+    const ok=await refreshAuth();
+    if(!ok) throw new Error('Sitzung abgelaufen. Bitte ab- und wieder anmelden.');
+  }
+  const r=await fetch(SUPABASE_URL+'/rest/v1/'+path,{...opts,headers:headers(opts.headers||{})});
+  const txt=await r.text();
+  if(!r.ok) throw new Error(`Supabase ${r.status}: ${txt||r.statusText}`);
+  return txt?JSON.parse(txt):null;
+}
+function saveAuth(a){auth=a;localStorage.setItem('rawlog_auth',JSON.stringify(a))}
+function clearAuth(){auth=null;user=null;localStorage.removeItem('rawlog_auth')}
+async function login(){
+  $('loginMsg').textContent='Anmeldung …';
+  try{
+    const r=await fetch(SUPABASE_URL+'/auth/v1/token?grant_type=password',{method:'POST',headers:{'apikey':SUPABASE_KEY,'Content-Type':'application/json'},body:JSON.stringify({email:$('loginEmail').value.trim(),password:$('loginPassword').value})});
+    const a=await r.json(); if(!r.ok) throw new Error(a.error_description||a.msg||a.error||'Anmeldung fehlgeschlagen');
+    saveAuth(a); user=a.user; await enterApp();
+  }catch(e){$('loginMsg').textContent='Anmeldung fehlgeschlagen. E-Mail/Passwort prüfen.'}
+}
+async function refreshAuth(){
+  if(!auth?.refresh_token)return false;
+  try{
+    const r=await fetch(SUPABASE_URL+'/auth/v1/token?grant_type=refresh_token',{method:'POST',headers:{'apikey':SUPABASE_KEY,'Content-Type':'application/json'},body:JSON.stringify({refresh_token:auth.refresh_token})});
+    const a=await r.json(); if(!r.ok)return false; saveAuth(a);user=a.user;return true;
+  }catch{return false}
+}
+async function logout(){clearAuth();data={sessions:[]};location.reload()}
+async function enterApp(){
+  $('loginGate').classList.add('hidden');$('accountBar').classList.remove('hidden');setSync('Cloud synchronisiert');
+  await loadProfileData();
+  await loadCloud();
+}
+async function initAuth(){
+  try{auth=JSON.parse(localStorage.getItem('rawlog_auth')||'null')}catch{}
+  if(auth){
+    const exp=(auth.expires_at||0)*1000;
+    if(Date.now()>exp-60000){if(!await refreshAuth()){clearAuth();return}}
+    user=auth.user;await enterApp();
+  }
+}
+async function loadCloud(){
+  try{
+    setSync('Cloud lädt …');
+    if(!user?.id) throw new Error('Kein angemeldeter Benutzer vorhanden.');
+
+    // Explizit nur Datensätze des angemeldeten Benutzers laden.
+    // RLS bleibt zusätzlich als serverseitige Schutzschicht aktiv.
+    const uid=encodeURIComponent(user.id);
+    const sessions=await api(`training_sessions?user_id=eq.${uid}&select=id,started_at,finished_at,workout_type,body_weight_kg,total_volume_kg,cindy_duration_seconds,cindy_rounds,cindy_extra_pullups,cindy_extra_pushups,cindy_extra_squats&order=started_at.asc`);
+    const exs=await api(`session_exercises?user_id=eq.${uid}&select=id,session_id,exercise_name,exercise_category,position&order=position.asc`);
+    const cls=await api(`exercise_clusters?user_id=eq.${uid}&select=id,exercise_id,cluster_number,reps,weight_kg&order=cluster_number.asc`);
+
+    data.sessions=(sessions||[]).map(s=>({
+      id:s.id,
+      date:s.started_at,
+      workout_type:s.workout_type||'strength',
+      body_weight_kg:s.body_weight_kg==null?null:Number(s.body_weight_kg),
+      total_volume_kg:s.total_volume_kg==null?null:Number(s.total_volume_kg),
+      cindy_duration_seconds:s.cindy_duration_seconds,
+      cindy_rounds:s.cindy_rounds,
+      cindy_extra_pullups:s.cindy_extra_pullups||0,
+      cindy_extra_pushups:s.cindy_extra_pushups||0,
+      cindy_extra_squats:s.cindy_extra_squats||0,
+      exercises:(exs||[]).filter(e=>e.session_id===s.id).map(e=>({
+        id:e.id,
+        name:e.exercise_name,
+        sets:(cls||[]).filter(c=>c.exercise_id===e.id)
+          .sort((a,b)=>a.cluster_number-b.cluster_number)
+          .map(c=>({id:c.id,reps:Number(c.reps),kg:Number(c.weight_kg)}))
+      }))
+    }));
+
+    setSync(`✓ Cloud aktuell · ${data.sessions.length} Einh.`);
+    render();
+  }catch(e){
+    setSync('⚠ Cloud-Fehler');
+    console.error('RAW Log loadCloud:',e);
+    alert('Cloud-Daten konnten nicht geladen werden.\n\n'+(e?.message||String(e)));
+  }
+}
+let activePage='home'; function show(id){activePage=id;['home','train','history','progress'].forEach(x=>$(x).classList.toggle('hidden',x!==id));render()}
+function last(name){for(let i=data.sessions.length-1;i>=0;i--)if(data.sessions[i].exercises.some(e=>e.name===name))return data.sessions[i].date;return null}
+function renderHints(){let h=[];let s=last('Seitheben');if(!s||days(s)>=7)h.push(`Seitheben: ${s?Math.floor(days(s))+' Tage':'noch nie'} her – Wochenziel offen.`);let abs=data.sessions.filter(x=>days(x.date)<=7&&x.exercises.some(e=>e.name==='Bauch 5-Minuten-Zirkel')).length;if(abs<3)h.push(`Bauch: ${abs}/3 Einheiten in den letzten 7 Tagen.`);['Mehrgelenk','Drücken','Ziehen'].forEach(c=>{let found=data.sessions.slice().reverse().find(s=>s.exercises.some(e=>EX.find(x=>x[0]===e.name)?.[1]===c));if(!found||days(found.date)>=4)h.push(`${c}: zuletzt ${found?Math.floor(days(found.date))+' Tage':'noch nie'} her.`)});$('hints').innerHTML=h.length?h.map(x=>`<div class='hint'>${x}</div>`).join('<br>'):`<span class='small'>Keine Frequenz-Hinweise offen. Körpergefühl entscheidet.</span>`}
+function sessionSummary(s){
+  if((s.workout_type||'strength')==='cindy')return cindySummary(s);
+  if(!s.exercises.length)return '<span class="small">Keine Übungen gespeichert (abgebrochener Test)</span>';
+  const vol=sessionVolume(s);
+  return s.exercises.map(e=>`${e.name} · ${e.sets.length} Cluster`).join('<br>')+`<div class='volume-line'>Gesamtvolumen: ${Math.round(vol||0).toLocaleString('de-DE')} kg</div>`;
+}
+function renderRecent(){
+  const start=Math.max(0,data.sessions.length-4);
+  $('recent').innerHTML=data.sessions.slice(start).map((s,i)=>({s,idx:start+i})).reverse().map(({s,idx})=>`<div class='exercise clickable' onclick="show('history');openSession(${idx})"><b>${new Date(s.date).toLocaleString('de-DE',{dateStyle:'short',timeStyle:'short'})}</b><div class='sets'>${sessionSummary(s)}</div><div class='small'>Antippen zum Bearbeiten</div></div>`).join('')||'<p class="small">Noch keine Cloud-Einheit gespeichert.</p>'
+}
+function clusterRows(e,ei,sessionIdx=null){return e.sets.length?`<div class='cluster-list'>${e.sets.map((s,j)=>`<button class='cluster' onclick='editCluster(${sessionIdx===null?"null":sessionIdx},${ei},${j})'><b>Cluster ${j+1}</b><span>${s.reps} × ${s.kg} kg ›</span></button>`).join('')}</div>`:`<div class='sets'>Noch kein Cluster</div>`}
+function categoryDone(cat){return current.some(e=>EX.find(x=>x[0]===e.name)?.[1]===cat&&e.sets.length>0)}
+function renderBasisStatus(){$('basisStatus').innerHTML=[['Mehrgelenk','Mehrgelenk'],['Drücken','Drücken'],['Ziehen','Ziehen']].map(([c,l])=>`<span class="statuschip ${categoryDone(c)?'done':'open'}">${categoryDone(c)?'✓':'○'} ${l}</span>`).join('')}
+function allBasisDone(){return categoryDone('Mehrgelenk')&&categoryDone('Drücken')&&categoryDone('Ziehen')}
+function hasSupplement(){return current.some(e=>['Seitheben','Bauch 5-Minuten-Zirkel'].includes(e.name))}
+function addSupplement(name){if(!current.some(e=>e.name===name))current.push({name,sets:[]});renderWorkout()}
+function supplementPrompt(){if(!allBasisDone()||hasSupplement())return '';return `<div class="supplement"><b>Basis komplett ✓</b><div class="small" style="margin:5px 0 10px">Möchtest du noch eine Ergänzungsübung hinzufügen?</div><div class="row"><button onclick="addSupplement('Seitheben')">Seitheben</button><button onclick="addSupplement('Bauch 5-Minuten-Zirkel')">Bauch 5 Min</button><button class="ghost" onclick="this.closest('.supplement').remove()">Heute nicht</button></div></div>`}
+function renderWorkout(){$('addEx').innerHTML=EX.map(x=>`<option>${x[0]}</option>`).join('');$('workout').innerHTML=current.map((e,i)=>`<div class='exercise'><b>${e.name}</b> <span class='pill'>${EX.find(x=>x[0]===e.name)?.[1]}</span>${clusterRows(e,i)}<div class='row' style='margin-top:8px'><input id='r${i}' type='number' inputmode='numeric' value='${e.sets.length?e.sets[e.sets.length-1].reps:""}' placeholder='Wdh.' style='width:85px'><input id='k${i}' type='number' inputmode='decimal' value='${e.sets.length?e.sets[e.sets.length-1].kg:""}' placeholder='kg' style='width:85px'><button onclick='addSet(${i})'>+ Cluster</button><button class='ghost' onclick='removeCurrentExercise(${i})'>Übung löschen</button></div></div>`).join('')+supplementPrompt();renderBasisStatus()}
+function removeCurrentExercise(i){if(confirm('Übung inklusive aller Cluster aus dieser Einheit löschen?')){current.splice(i,1);renderWorkout()}}
+function addExercise(name=$('addEx').value){if(!current.some(e=>e.name===name))current.push({name,sets:[]});renderWorkout()}
+function addSet(i){let reps=+$('r'+i).value,kg=+$('k'+i).value;if(reps){current[i].sets.push({reps,kg});renderWorkout()}}
+async function finishWorkout(){
+  const filled=current.filter(e=>e.sets.length>0);
+  if(!filled.length)return alert('Bitte mindestens einen Cluster speichern.');
+  if(!allBasisDone()&&!confirm('Mehrgelenk, Drücken und Ziehen sind noch nicht vollständig. Trotzdem speichern?'))return;
+  let sid=null;
+  try{
+    setSync('Speichert …');
+    ensureWorkoutDateTime();
+    const chosen=$('workoutDateTime').value;
+    const dt=chosen?new Date(chosen):new Date();
+    if(Number.isNaN(dt.getTime())) return alert('Bitte ein gültiges Datum und eine gültige Uhrzeit eingeben.');
+    const now=dt.toISOString();
+    await loadProfileData();
+    const bw=bodyWeightAt(dt);
+    if(!bw) return alert('Für diese Einheit ist kein Körpergewicht im Profil hinterlegt.');
+    const tempSession={date:now,workout_type:'strength',body_weight_kg:bw,exercises:filled};
+    const totalVolume=sessionVolume(tempSession);
+    const s=await api('training_sessions',{method:'POST',headers:{Prefer:'return=representation'},body:JSON.stringify({user_id:user.id,started_at:now,finished_at:now,workout_type:'strength',body_weight_kg:bw,total_volume_kg:totalVolume})});
+    sid=s[0].id;
+    for(let i=0;i<filled.length;i++){
+      const e=filled[i],cat=EX.find(x=>x[0]===e.name)?.[1]||null;
+      const er=await api('session_exercises',{method:'POST',headers:{Prefer:'return=representation'},body:JSON.stringify({session_id:sid,user_id:user.id,exercise_name:e.name,exercise_category:cat,position:i})});
+      const rows=e.sets.map((x,j)=>({exercise_id:er[0].id,user_id:user.id,cluster_number:j+1,reps:Number(x.reps),weight_kg:Number(x.kg)||0}));
+      await api('exercise_clusters',{method:'POST',headers:{Prefer:'return=minimal'},body:JSON.stringify(rows)});
+    }
+    current=[];
+    $('workoutDateTime').value=localDateTimeValue();
+    await loadCloud();
+    show('home');
+  }catch(e){
+    console.error('RAW Log save:',e);
+    if(sid){
+      try{await api('training_sessions?id=eq.'+sid,{method:'DELETE'});}catch(cleanupError){console.error('Rollback failed:',cleanupError)}
+    }
+    setSync('⚠ Speichern fehlgeschlagen');
+    alert('Einheit wurde nicht vollständig gespeichert und deshalb zurückgerollt.\n\n'+(e?.message||String(e)));
+  }
+}
+function renderHistory(){
+ const list=$('historyList');
+ list.innerHTML=data.sessions.length?data.sessions.map((s,idx)=>({s,idx})).reverse().map(({s,idx})=>{
+   const dateText=new Date(s.date).toLocaleString('de-DE',{dateStyle:'medium',timeStyle:'short'});
+   const bw=bodyWeightAt(s.date)??s.body_weight_kg??0;
+   if((s.workout_type||'strength')==='cindy'){
+     return `<div class='history-session clickable' onclick='openSession(${idx})'><div class='history-session-head'><div><div class='history-date'>${dateText}</div><div class='history-meta'>Cindy-Workout · Körpergewicht: ${bw?bw.toLocaleString('de-DE')+' kg':'–'}</div></div><div class='history-volume'>CINDY</div></div>${cindySummary(s)}<div class='history-meta' style='margin-top:10px'>Antippen zum Bearbeiten</div></div>`;
+   }
+   const details=s.exercises.map(e=>{
+     const sets=e.sets||[];
+     const chips=sets.length?sets.map((set,i)=>{
+       const eff=effectiveSetWeight(e.name,set.kg,bw);
+       const text=(e.name==='Klimmzüge'||e.name==='Dips')?`C${i+1} · ${set.reps} Wdh. · +${Number(set.kg||0).toLocaleString('de-DE')} kg · ${eff.toLocaleString('de-DE')} kg gesamt`:`C${i+1} · ${set.reps} × ${Number(set.kg||0).toLocaleString('de-DE')} kg`;
+       return `<span class='history-cluster-chip'>${text}</span>`;
+     }).join(''):`<span class='history-meta'>Keine Cluster</span>`;
+     return `<div class='history-exercise-card'><div class='history-exercise-name'>${e.name}</div><div class='history-clusters'>${chips}</div></div>`;
+   }).join('');
+   const total=s.exercises.reduce((n,e)=>n+(e.sets||[]).length,0), vol=sessionVolume(s);
+   return `<div class='history-session clickable' onclick='openSession(${idx})'><div class='history-session-head'><div><div class='history-date'>${dateText}</div><div class='history-meta'>Körpergewicht: ${bw?bw.toLocaleString('de-DE')+' kg':'–'} · ${total} Cluster</div></div><div class='history-volume'>${Math.round(vol||0).toLocaleString('de-DE')} kg</div></div>${details}<div class='history-meta' style='margin-top:10px'>Antippen zum Bearbeiten</div></div>`;
+ }).join(''):'<p class="small">Noch keine Cloud-Einheit gespeichert.</p>';
+ requestAnimationFrame(alignWeekStrip);
+}
+function openSession(idx){editingSession=idx;const s=data.sessions[idx];const dt=localDateTimeValue(new Date(s.date));
+if((s.workout_type||'strength')==='cindy'){$('historyList').innerHTML=`<div class='row'><button class='ghost' onclick='editingSession=null;renderHistory()'>← Zurück</button><button class='danger' onclick='deleteSession(${idx})'>Einheit löschen</button></div><div class='history-session' style='margin-top:12px'>${cindySummary(s)}<div class='history-meta' style='margin-top:8px'>Körpergewicht: ${s.body_weight_kg?Number(s.body_weight_kg).toLocaleString('de-DE')+' kg':'–'}</div><div style='margin-top:14px'><label class='small'>Datum & Uhrzeit</label><input id='editCindyDate' type='datetime-local' class='wide' value='${dt}'><div class='row' style='margin-top:8px'><div><label class='small'>Minuten</label><input id='editCindyMinutes' type='number' min='1' value='${Math.round(Number(s.cindy_duration_seconds||0)/60)}'></div><div><label class='small'>Runden</label><input id='editCindyRounds' type='number' min='0' value='${Number(s.cindy_rounds||0)}'></div></div><div class='row'><div><label class='small'>Extra Klimmzüge</label><input id='editCindyPull' type='number' min='0' max='5' value='${Number(s.cindy_extra_pullups||0)}'></div><div><label class='small'>Extra Liegestütze</label><input id='editCindyPush' type='number' min='0' max='10' value='${Number(s.cindy_extra_pushups||0)}'></div><div><label class='small'>Extra Kniebeugen</label><input id='editCindySquat' type='number' min='0' max='15' value='${Number(s.cindy_extra_squats||0)}'></div></div><button class='primary wide' style='margin-top:10px' onclick='saveCindyEdit(${idx})'>Änderungen speichern</button></div></div>`;return}
+$('historyList').innerHTML=`<div class='row'><button class='ghost' onclick='editingSession=null;renderHistory()'>← Zurück</button><button class='danger' onclick='deleteSession(${idx})'>Einheit löschen</button></div><div style='margin-top:12px'><label class='small' for='historyDateTime'>Datum & Uhrzeit</label><div class='row' style='margin-top:6px'><input id='historyDateTime' type='datetime-local' value='${dt}'><button onclick='saveSessionDate(${idx})'>Datum speichern</button></div></div>`+s.exercises.map((e,ei)=>`<div class='exercise'><div class='row' style='justify-content:space-between'><div><b>${e.name}</b> <span class='pill'>${EX.find(x=>x[0]===e.name)?.[1]||''}</span></div><button class='ghost' onclick='deleteHistoricExercise(${idx},${ei})'>Übung löschen</button></div>${clusterRows(e,ei,idx)}</div>`).join('')}
+async function saveCindyEdit(idx){
+ const s=data.sessions[idx], v=$('editCindyDate').value, dt=new Date(v), mins=Math.max(1,Number($('editCindyMinutes').value)||1), rounds=Math.max(0,Number($('editCindyRounds').value)||0);
+ if(Number.isNaN(dt.getTime()))return alert('Bitte ein gültiges Datum und eine gültige Uhrzeit eingeben.');
+ await loadProfileData(); const bw=bodyWeightAt(dt); if(!bw)return alert('Für dieses Datum ist kein Körpergewicht im Profil hinterlegt.');
+ const pull=Math.min(5,Math.max(0,Number($('editCindyPull').value)||0)), push=Math.min(10,Math.max(0,Number($('editCindyPush').value)||0)), squat=Math.min(15,Math.max(0,Number($('editCindySquat').value)||0));
+ try{setSync('Cindy wird gespeichert …');await api('training_sessions?id=eq.'+s.id,{method:'PATCH',headers:{Prefer:'return=minimal'},body:JSON.stringify({started_at:dt.toISOString(),finished_at:dt.toISOString(),body_weight_kg:bw,cindy_duration_seconds:mins*60,cindy_rounds:rounds,cindy_extra_pullups:pull,cindy_extra_pushups:push,cindy_extra_squats:squat})});await loadCloud();const newIdx=data.sessions.findIndex(x=>x.id===s.id);openSession(newIdx>=0?newIdx:idx)}catch(e){console.error(e);setSync('⚠ Cindy konnte nicht gespeichert werden');alert('Cindy konnte nicht gespeichert werden.')} 
+}
+async function saveSessionDate(idx){const v=$('historyDateTime').value;if(!v)return alert('Bitte Datum und Uhrzeit auswählen.');const d=new Date(v);if(Number.isNaN(d.getTime()))return alert('Ungültiges Datum oder ungültige Uhrzeit.');try{setSync('Datum wird gespeichert …');await api('training_sessions?id=eq.'+data.sessions[idx].id,{method:'PATCH',headers:{Prefer:'return=minimal'},body:JSON.stringify({started_at:d.toISOString(),finished_at:d.toISOString()})});await loadCloud();const newIdx=data.sessions.findIndex(x=>x.id===data.sessions[idx]?.id);openSession(newIdx>=0?newIdx:Math.max(0,data.sessions.length-1))}catch(e){console.error(e);setSync('⚠ Datum konnte nicht gespeichert werden');alert('Datum und Uhrzeit konnten nicht gespeichert werden.')} }
+async function deleteSession(idx){if(!confirm('Diese komplette Trainingseinheit wirklich löschen?'))return;try{await api('training_sessions?id=eq.'+data.sessions[idx].id,{method:'DELETE'});await loadCloud();show('history')}catch(e){alert('Löschen fehlgeschlagen.')}}
+async function deleteHistoricExercise(si,ei){if(!confirm('Diese Übung inklusive aller Cluster löschen?'))return;try{await api('session_exercises?id=eq.'+data.sessions[si].exercises[ei].id,{method:'DELETE'});await loadCloud();show('history')}catch(e){alert('Löschen fehlgeschlagen.')}}
+function editCluster(si,ei,ci){editTarget={si,ei,ci};const set=si===null?current[ei].sets[ci]:data.sessions[si].exercises[ei].sets[ci];$('editTitle').textContent=`Cluster ${ci+1} bearbeiten`;$('editReps').value=set.reps;$('editKg').value=set.kg;$('editModal').classList.remove('hidden')}
+function closeEdit(){$('editModal').classList.add('hidden');editTarget=null}
+async function saveClusterEdit(){
+  if(!editTarget)return;const {si,ei,ci}=editTarget,reps=+$('editReps').value,kg=+$('editKg').value;if(!reps)return alert('Bitte Wiederholungen eingeben.');
+  if(si===null){current[ei].sets[ci]={reps,kg};closeEdit();render();return}
+  try{const c=data.sessions[si].exercises[ei].sets[ci];await api('exercise_clusters?id=eq.'+c.id,{method:'PATCH',headers:{Prefer:'return=minimal'},body:JSON.stringify({reps,weight_kg:kg})});closeEdit();await loadCloud();openSession(si)}catch(e){alert('Änderung konnte nicht gespeichert werden.')}
+}
+async function deleteClusterEdit(){
+  if(!editTarget||!confirm('Diesen Cluster wirklich löschen?'))return;const {si,ei,ci}=editTarget;
+  if(si===null){current[ei].sets.splice(ci,1);closeEdit();render();return}
+  try{const c=data.sessions[si].exercises[ei].sets[ci];await api('exercise_clusters?id=eq.'+c.id,{method:'DELETE'});closeEdit();await loadCloud();openSession(si)}catch(e){alert('Löschen fehlgeschlagen.')}
+}
+function parseSpeech(t){let low=t.toLowerCase().replace(',','.');let ex=EX.find(x=>low.includes(x[0].toLowerCase().replace('langhantel','').trim()))||EX.find(x=>low.includes(x[0].split(' ')[0].toLowerCase()));let nums=[...low.matchAll(/\d+(?:[.,]\d+)?/g)].map(x=>+x[0].replace(',','.'));let reps=(low.match(/(\d+)\s*(wiederholung|wdh)/)||[])[1];let kg=(low.match(/(\d+(?:[.,]\d+)?)\s*(kilo|kg)/)||[])[1];if(ex){let item=current.find(e=>e.name===ex[0]);if(!item){item={name:ex[0],sets:[]};current.push(item)}if(reps||nums.length)item.sets.push({reps:+reps||nums[0],kg:+(kg||nums[1]||0)});renderWorkout();$('speech').textContent='Erkannt: '+t}else $('speech').textContent='Übung nicht sicher erkannt: '+t}
+function listen(){let SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR){$('speech').textContent='Diese Browser-Spracherkennung ist hier nicht zuverlässig verfügbar.';return}let r=new SR();r.lang='de-DE';r.interimResults=false;r.continuous=false;$('speech').textContent='Ich höre zu …';r.onresult=e=>parseSpeech(e.results[0][0].transcript);r.onerror=e=>$('speech').textContent='Spracherkennung fehlgeschlagen: '+e.error;try{r.start()}catch(e){$('speech').textContent='Spracherkennung konnte nicht gestartet werden.'}}
+let analyticsExercise=null, analyticsMetric='weight';
+
+function strengthSessions(){
+  return data.sessions.filter(s=>(s.workout_type||'strength')==='strength' && (s.exercises||[]).length);
+}
+function exercisePoints(name){
+  return strengthSessions().map(s=>{
+    const e=(s.exercises||[]).find(x=>x.name===name);
+    if(!e||!(e.sets||[]).length)return null;
+    const bw=bodyWeightAt(s.date)??s.body_weight_kg??0;
+    const weights=e.sets.map(set=>effectiveSetWeight(name,set.kg,bw));
+    const volume=e.sets.reduce((sum,set)=>sum+Number(set.reps||0)*effectiveSetWeight(name,set.kg,bw),0);
+    const reps=Math.max(...e.sets.map(set=>Number(set.reps||0)));
+    return {date:s.date,weight:Math.max(...weights),volume,reps,clusters:e.sets.length};
+  }).filter(Boolean);
+}
+function formatKg(v){return Math.round(Number(v||0)).toLocaleString('de-DE')+' kg'}
+function svgLineChart(points, valueKey, valueLabel){
+  if(!points.length)return `<div class='small'>Noch nicht genügend Daten für diese Auswertung.</div>`;
+  const pts=points.slice(-12), W=700,H=190,L=44,R=14,T=15,B=34;
+  const vals=pts.map(p=>Number(p[valueKey]||0)), max=Math.max(...vals,1), min=Math.min(...vals,0);
+  const range=Math.max(1,max-min);
+  const x=i=>L+(pts.length===1?(W-L-R)/2:i*(W-L-R)/(pts.length-1));
+  const y=v=>T+(max-v)*(H-T-B)/range;
+  const path=pts.map((p,i)=>`${i?'L':'M'} ${x(i).toFixed(1)} ${y(Number(p[valueKey]||0)).toFixed(1)}`).join(' ');
+  const grids=[0,.5,1].map(f=>{const yy=T+f*(H-T-B), val=max-f*range;return `<line class="chart-grid" x1="${L}" y1="${yy}" x2="${W-R}" y2="${yy}"/><text class="chart-label" x="2" y="${yy+3}">${Math.round(val).toLocaleString('de-DE')}</text>`}).join('');
+  const dots=pts.map((p,i)=>`<circle class="chart-dot" cx="${x(i)}" cy="${y(Number(p[valueKey]||0))}" r="5"><title>${new Date(p.date).toLocaleDateString('de-DE')}: ${Math.round(Number(p[valueKey]||0)).toLocaleString('de-DE')} ${valueLabel}</title></circle>`).join('');
+  const labels=pts.map((p,i)=>{if(pts.length>7 && i%2===1 && i!==pts.length-1)return '';return `<text class="chart-label" text-anchor="middle" x="${x(i)}" y="${H-8}">${new Date(p.date).toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'})}</text>`}).join('');
+  return `<div class='chart-wrap'><div class='chart-title'><b>${valueLabel==='kg'?'Gewicht':'Volumen'} über Zeit</b><span class='small'>letzte ${pts.length} Einh.</span></div><svg class='chart-svg' viewBox='0 0 ${W} ${H}' preserveAspectRatio='none' role='img' aria-label='Entwicklung über Zeit'>${grids}<path class='chart-line' d='${path}'/>${dots}${labels}</svg></div>`;
+}
+function renderOverallAnalytics(){
+  const sessions=strengthSessions().map(s=>({date:s.date,volume:sessionVolume(s)||0})).filter(x=>x.volume>0);
+  if(!sessions.length){
+    $('volumeRecord').innerHTML=`<div class='small' style='margin-top:10px'>Noch keine Krafttrainingseinheiten mit Volumen vorhanden.</div>`;
+    $('overallVolumeChart').innerHTML='';
+    return;
+  }
+  const record=sessions.reduce((a,b)=>b.volume>a.volume?b:a,sessions[0]);
+  $('volumeRecord').innerHTML=`<div class='analytics-record'><div><div class='small'>Höchstes Gesamtvolumen einer Einheit</div><div class='record-value'>${formatKg(record.volume)}</div><div class='record-date'>${new Date(record.date).toLocaleDateString('de-DE')}</div></div><span class='pill'>Rekord</span></div>`;
+  $('overallVolumeChart').innerHTML=svgLineChart(sessions,'volume','kg Volumen');
+}
+function openExerciseAnalytics(name){
+  analyticsExercise=name; analyticsMetric='weight';
+  $('exerciseAnalyticsModal').classList.remove('hidden');
+  renderExerciseAnalytics();
+}
+function closeExerciseAnalytics(){$('exerciseAnalyticsModal').classList.add('hidden');analyticsExercise=null}
+function setExerciseMetric(metric){analyticsMetric=metric;renderExerciseAnalytics()}
+function renderExerciseAnalytics(){
+  if(!analyticsExercise)return;
+  const pts=exercisePoints(analyticsExercise);
+  $('analyticsExerciseTitle').textContent=analyticsExercise;
+  $('analyticsExerciseSub').textContent=`${pts.length} historische ${pts.length===1?'Einheit':'Einheiten'}`;
+  $('metricWeightBtn').classList.toggle('active',analyticsMetric==='weight');
+  $('metricVolumeBtn').classList.toggle('active',analyticsMetric==='volume');
+  if(!pts.length){
+    $('analyticsStats').innerHTML='';
+    $('exerciseChart').innerHTML=`<div class='small'>Für diese Übung sind noch keine Cluster gespeichert.</div>`;
+    $('exerciseRecent').innerHTML='';
+    return;
+  }
+  const maxWeight=Math.max(...pts.map(p=>p.weight)), maxVolume=Math.max(...pts.map(p=>p.volume)), maxReps=Math.max(...pts.map(p=>p.reps));
+  $('analyticsStats').innerHTML=`<div class='analytics-stat'><span class='small'>Höchstes Gewicht</span><b>${formatKg(maxWeight)}</b></div><div class='analytics-stat'><span class='small'>Höchstes Volumen</span><b>${formatKg(maxVolume)}</b></div><div class='analytics-stat'><span class='small'>Meiste Wdh. / Cluster</span><b>${maxReps}</b></div>`;
+  $('exerciseChart').innerHTML=svgLineChart(pts,analyticsMetric,analyticsMetric==='weight'?'kg':'kg Volumen');
+  $('exerciseRecent').innerHTML=`<b>Letzte Einheiten</b>`+pts.slice(-5).reverse().map(p=>`<div class='weight-row'><span>${new Date(p.date).toLocaleDateString('de-DE')} · ${p.clusters} Cluster</span><b>${analyticsMetric==='weight'?formatKg(p.weight):formatKg(p.volume)}</b></div>`).join('');
+}
+function renderProgress(){
+  let week=data.sessions.filter(s=>days(s.date)<=7);
+  $('week').textContent=week.length;
+  $('abs').textContent=week.filter(s=>s.exercises.some(e=>e.name==='Bauch 5-Minuten-Zirkel')).length+'/3';
+  $('freq').innerHTML=EX.map(e=>{let l=last(e[0]);return `<div class='exercise exercise-link' onclick='openExerciseAnalytics(${JSON.stringify(e[0])})'><span>${e[0]}</span><span><span class='small'>${l?Math.floor(days(l))+' T.':'–'}</span><span class='chevron'>›</span></span></div>`}).join('');
+  renderOverallAnalytics();
+}
+
+function localDayKey(value){
+  const d=new Date(value);
+  if(Number.isNaN(d.getTime())) return '';
+  const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),day=String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${day}`;
+}
+function alignWeekStrip(){
+ const strip=$('weekStrip'); if(!strip)return;
+ const mobile=window.matchMedia('(max-width:760px)').matches;
+ const visible=activePage==='home'||activePage==='history';
+ strip.classList.toggle('hidden',!visible);
+ if(!visible)return;
+ const card=activePage==='history'?$('historyCard'):$('todayCard');
+ if(card) strip.style.top=Math.round(card.getBoundingClientRect().top)+'px';
+}
+function renderWeekStrip(){
+  const box=$('weekStrip'); if(!box)return;
+  const trained=new Set(data.sessions.map(s=>localDayKey(s.date)));
+  const dayFmt=new Intl.DateTimeFormat('de-DE',{weekday:'short'});
+  const rows=[];
+  for(let offset=0;offset<7;offset++){
+    const d=new Date(); d.setHours(12,0,0,0); d.setDate(d.getDate()-offset);
+    const key=localDayKey(d);
+    const date=`${String(d.getDate()).padStart(2,'0')}.${String(d.getMonth()+1).padStart(2,'0')}.`;
+    const weekday=dayFmt.format(d).replace('.','');
+    rows.push(`<div class="week-day ${trained.has(key)?'done':''} ${offset===0?'today':''}" title="${trained.has(key)?'Trainingseinheit vorhanden':'Keine Trainingseinheit'}"><span class="week-date">${date}</span><span class="week-name">${weekday}</span></div>`);
+  }
+  box.innerHTML=rows.join('');
+  requestAnimationFrame(alignWeekStrip);
+}
+function render(){renderHints();renderRecent();renderWorkout();renderHistory();renderProgress();renderWeekStrip()}
+render();ensureWorkoutDateTime();initAuth();
+if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js?v=281',{updateViaCache:'none'}).then(r=>r.update()).catch(()=>{});
+
+window.addEventListener('resize',alignWeekStrip);
+window.addEventListener('orientationchange',()=>setTimeout(alignWeekStrip,100));
+</script></body></html>
